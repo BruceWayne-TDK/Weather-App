@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Weather Dashboard</title>
+
+    <link rel="stylesheet" href="wdash.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- Landing Screen -->
+
+    <section class="hero">
+
+        <h1 id="title">Weather Dashboard</h1>
+
+        <p class="hero-text">
+            Search any city and instantly view its weather with a live city landscape.
+        </p>
+
+        <div class="search-wrapper">
+
+            <div class="search-icon">
+                🔍
+            </div>
+
+            <input
+                type="search"
+                id="search"
+                placeholder="Search any city..."
+                autocomplete="off">
+
+        </div>
+
+        <h3 id="title2">
+            By Sahil
+        </h3>
+
+    </section>
+
+
+
+    <!-- Weather Card -->
+
+    <section class="container">
+
+        <div class="top">
+
+            <div class="Searchicon">
+                
+            </div>
+
+            <h3 id="loc">
+                Location
+            </h3>
+
+        </div>
+
+
+
+        <div class="details">
+
+            <div class="main-weather">
+
+                <h1 id="temp">
+                    23°C
+                </h1>
+
+                <p id="feels">
+                    Feels like 22°C
+                </p>
+
+            </div>
+
+
+
+            <div class="date-time">
+
+                <h1 id="date">
+                    Wednesday
+                </h1>
+
+                <h2 id="time">
+                    6:45 PM
+                </h2>
+
+            </div>
+
+
+
+            <div class="stats">
+
+                <div class="stat">
+
+                    <span>Humidity</span>
+
+                    <p id="humidity">
+                        70%
+                    </p>
+
+                </div>
+
+                <div class="stat">
+
+                    <span>Maximum</span>
+
+                    <p id="max">
+                        28°C
+                    </p>
+
+                </div>
+
+                <div class="stat">
+
+                    <span>Minimum</span>
+
+                    <p id="min">
+                        22°C
+                    </p>
+
+                </div>
+
+                <div class="stat">
+
+                    <span>Wind</span>
+
+                    <p id="windspeed">
+                        10 km/h
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <div id="loader">
+
+    <div class="loader-box">
+
+        <div class="spinner"></div>
+
+        <h2>Fetching Weather...</h2>
+
+        <p>Loading city landscape</p>
+
+    </div>
+
+</div>
+
+    <script>
+            // ================= WEATHER =================
+
+async function Checkweather(city) {
+
+    const apikey = "ee20f48fd8c213031a776984e28a3b70";
+
+    const apiURL =
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apikey}`;
+
+    const response = await fetch(apiURL);
+
+    if (!response.ok) {
+        throw new Error("City not found");
+    }
+
+    const data = await response.json();
+
+    console.log(data);
+
+    document.querySelector("#temp").textContent =
+        `${Math.round(data.main.temp)}°C`;
+
+    document.querySelector("#feels").textContent =
+        `Feels like ${Math.round(data.main.feels_like)}°C`;
+
+    document.querySelector("#humidity").textContent =
+        `${data.main.humidity}%`;
+
+    document.querySelector("#max").textContent =
+        `${Math.round(data.main.temp_max)}°C`;
+
+    document.querySelector("#min").textContent =
+        `${Math.round(data.main.temp_min)}°C`;
+
+    document.querySelector("#windspeed").textContent =
+        `${data.wind.speed} km/h`;
+
+    document.querySelector("#loc").textContent =
+        `📍 ${data.name}, ${data.sys.country}`;
+
+}
+
+
+
+// ================= LIVE DATE & TIME =================
+
+function updateClock() {
+
+    const now = new Date();
+
+    document.querySelector("#date").textContent =
+        now.toLocaleDateString("en-GB", {
+            weekday: "long",
+            day: "2-digit",
+            month: "short"
+        });
+
+    document.querySelector("#time").textContent =
+        now.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true
+        });
+
+}
+
+updateClock();
+
+setInterval(updateClock, 1000);
+
+
+
+// ================= LANDSCAPE =================
+
+async function Landscape(city) {
+
+    const apikey2 =
+        "TCZKaLqab9hmd9P0D5E7MRJiMHUej1tE2J2QE7OUl7XqFRK9Fh8DOwGA";
+
+    const apiURL2 =
+        `https://api.pexels.com/v1/search?query=${city}%20skyline%20city&orientation=landscape&per_page=10`;
+
+    const response2 = await fetch(apiURL2, {
+
+        headers: {
+            Authorization: apikey2
+        }
+
+    });
+
+    const data2 = await response2.json();
+
+    console.log(data2);
+
+    let imgURL = "bgw.jpg";
+
+    if (data2.photos.length > 0) {
+        imgURL = data2.photos[0].src.large;
+    }
+
+    const card = document.querySelector(".container");
+
+    card.style.opacity = "0.85";
+
+    setTimeout(() => {
+
+        card.style.backgroundImage =
+            `linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.08)),url(${imgURL})`;
+
+        card.style.opacity = "1";
+
+    }, 150);
+
+}
+
+
+
+// ================= UPDATE CITY =================
+
+async function updateCity(city) {
+
+    document.querySelector("#loader").classList.add("show");
+
+    if (city.trim() === "") return;
+
+    try {
+
+        await Promise.all([
+
+            Checkweather(city),
+
+            Landscape(city)
+
+        ]);
+
+        document.querySelector(".hero")
+            .classList.add("active");
+
+        document.querySelector(".container")
+            .classList.add("show");
+
+        document.querySelector("#search")
+            .classList.add("active");
+
+            document.querySelector("#loader").classList.remove("show");
+
+    }
+
+    catch (error) {
+            document.querySelector("#loader").classList.remove("show");
+        alert("City not found!");
+
+        console.error(error);
+
+    }
+
+}
+
+
+
+// ================= SEARCH =================
+
+const searchbox = document.querySelector("#search");
+
+searchbox.addEventListener("keydown", function (event) {
+
+    if (event.key === "Enter") {
+
+        updateCity(searchbox.value.trim());
+
+    }
+
+});
+        </script>
+</body>
+</html>
